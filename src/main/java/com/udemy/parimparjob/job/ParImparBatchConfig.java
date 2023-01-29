@@ -17,7 +17,7 @@ public class ParImparBatchConfig {
 
 	@Bean
 	public Job imprimeParImparJob(Step imprimeParImparStep) {
-		return jobBuilderFactory.get("imprimeParImparJob").start(imprimeParImparStep)
+		return jobBuilderFactory.get("imprimeParImparJob1").start(imprimeParImparStep)
 				.incrementer(new RunIdIncrementer()).build();
 	}
 }
