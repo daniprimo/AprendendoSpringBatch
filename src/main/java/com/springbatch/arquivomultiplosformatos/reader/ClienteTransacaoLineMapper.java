@@ -21,8 +21,8 @@ public class ClienteTransacaoLineMapper {
 	@Bean
 	public PatternMatchingCompositeLineMapper lineMapper() {
 		PatternMatchingCompositeLineMapper lineMapper = new PatternMatchingCompositeLineMapper<>();
-		lineMapper.setTokenizers(tokenizers());
-		lineMapper.setFieldSetMappers(fieldSetMappers());
+		lineMapper.setTokenizers(tokenizers());//pega os dados
+		lineMapper.setFieldSetMappers(fieldSetMappers());//cria o objeto
 		return lineMapper;
 	}
 
