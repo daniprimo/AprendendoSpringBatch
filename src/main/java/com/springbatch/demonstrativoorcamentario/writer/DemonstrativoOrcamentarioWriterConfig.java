@@ -9,7 +9,10 @@ import java.util.Date;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.file.FlatFileHeaderCallback;
 import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.MultiResourceItemWriter;
+import org.springframework.batch.item.file.ResourceSuffixCreator;
 import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.batch.item.file.builder.MultiResourceItemWriterBuilder;
 import org.springframework.batch.item.file.transform.LineAggregator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +24,30 @@ import com.springbatch.demonstrativoorcamentario.dominio.Lancamento;
 
 @Configuration
 public class DemonstrativoOrcamentarioWriterConfig {
+
+	@StepScope
+	@Bean
+	public MultiResourceItemWriter<GrupoLancamento> multiDemonstrativoOrcamentarioWriter (
+			@Value("#{jobParameters['demonstrativosOrcamentarios']}") Resource demonstrativoOrcamentarios, 
+			FlatFileItemWriter<GrupoLancamento> demonstrativoOrcamentarioWriter) {
+		return new MultiResourceItemWriterBuilder<GrupoLancamento>()
+				.name("multiDemonstrativoOrcamentarioWriter")
+				.resource(demonstrativoOrcamentarios)
+				.delegate(demonstrativoOrcamentarioWriter)
+				.resourceSuffixCreator(suffixCreator())//indexar os arquivos
+				.itemCountLimitPerResource(1)
+				.build(); 
+	}
+	
+	private ResourceSuffixCreator suffixCreator() {
+		return new ResourceSuffixCreator() {
+			
+			@Override
+			public String getSuffix(int index) {
+				return index + ".txt";
+			}
+		};
+	}
 
 	@StepScope
 	@Bean
@@ -42,7 +69,7 @@ public class DemonstrativoOrcamentarioWriterConfig {
 		@Override
 		public void writeHeader(Writer writer) throws IOException {			
 			writer.append(String.format("SISTEMA INTEGRADO: XPTO \t\t\t\t DATA: %s\n", new SimpleDateFormat("dd/MM/yyyy").format(new Date())));
-			writer.append(String.format("MÓDULO: ORÇAMENTO \t\t\t\t\t HORA: %s\n", new SimpleDateFormat("HH:MM").format(new Date())));
+			writer.append(String.format("MÓDULO: ORÇAMENTO \t\t\t\t\t\t HORA: %s\n", new SimpleDateFormat("HH:MM").format(new Date())));
 			writer.append(String.format("\t\t\tDEMONSTRATIVO ORCAMENTARIO\n"));
 			writer.append(String.format("----------------------------------------------------------------------------\n"));
 			writer.append(String.format("CODIGO NOME VALOR\n"));
@@ -58,7 +85,7 @@ public class DemonstrativoOrcamentarioWriterConfig {
 
 			@Override
 			public String aggregate(GrupoLancamento grupo) {
-				String formatoGrupoLancamento = String.format("[%d] %s - %s", grupo.getCodigoNaturezaDespesa(),
+				String formatoGrupoLancamento = String.format("[%d] %s - %s\n", grupo.getCodigoNaturezaDespesa(),
 						grupo.getDescricaoNaturezaDespesa(),
 						NumberFormat.getCurrencyInstance().format(grupo.getTotal()));
 				StringBuilder strBuilder = new StringBuilder();
